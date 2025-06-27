@@ -8,16 +8,19 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
-import { Route as AuthenticatedHomeRouteRouteImport } from './routes/_authenticated/home/route'
 import { Route as AuthenticatedHomeIndexRouteImport } from './routes/_authenticated/home/index'
-import { Route as AuthenticatedSessionSessionIdRouteImport } from './routes/_authenticated/session/$sessionId'
+import { Route as AuthenticatedHomeUsersRouteImport } from './routes/_authenticated/home/users'
 import { Route as AuthenticatedHomeSessionsRouteImport } from './routes/_authenticated/home/sessions'
-import { Route as AuthenticatedHomeProfileRouteImport } from './routes/_authenticated/home/profile'
+import { Route as AuthenticatedHomeHomeLayoutRouteImport } from './routes/_authenticated/home/_homeLayout'
+
+const AuthenticatedHomeRouteImport = createFileRoute('/_authenticated/home')()
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -27,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const SignUpIndexRoute = SignUpIndexRouteImport.update({
   id: '/sign-up/',
@@ -38,96 +46,79 @@ const SignInIndexRoute = SignInIndexRouteImport.update({
   path: '/sign-in/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHomeRouteRoute = AuthenticatedHomeRouteRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedHomeIndexRoute = AuthenticatedHomeIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedHomeRouteRoute,
+  getParentRoute: () => AuthenticatedHomeRoute,
 } as any)
-const AuthenticatedSessionSessionIdRoute =
-  AuthenticatedSessionSessionIdRouteImport.update({
-    id: '/session/$sessionId',
-    path: '/session/$sessionId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
+const AuthenticatedHomeUsersRoute = AuthenticatedHomeUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedHomeRoute,
+} as any)
 const AuthenticatedHomeSessionsRoute =
   AuthenticatedHomeSessionsRouteImport.update({
     id: '/sessions',
     path: '/sessions',
-    getParentRoute: () => AuthenticatedHomeRouteRoute,
+    getParentRoute: () => AuthenticatedHomeRoute,
   } as any)
-const AuthenticatedHomeProfileRoute =
-  AuthenticatedHomeProfileRouteImport.update({
-    id: '/profile',
-    path: '/profile',
-    getParentRoute: () => AuthenticatedHomeRouteRoute,
+const AuthenticatedHomeHomeLayoutRoute =
+  AuthenticatedHomeHomeLayoutRouteImport.update({
+    id: '/_homeLayout',
+    getParentRoute: () => AuthenticatedHomeRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/home': typeof AuthenticatedHomeRouteRouteWithChildren
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/home/profile': typeof AuthenticatedHomeProfileRoute
+  '/home': typeof AuthenticatedHomeHomeLayoutRoute
   '/home/sessions': typeof AuthenticatedHomeSessionsRoute
-  '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
+  '/home/users': typeof AuthenticatedHomeUsersRoute
   '/home/': typeof AuthenticatedHomeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/home/profile': typeof AuthenticatedHomeProfileRoute
-  '/home/sessions': typeof AuthenticatedHomeSessionsRoute
-  '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/home': typeof AuthenticatedHomeIndexRoute
+  '/home/sessions': typeof AuthenticatedHomeSessionsRoute
+  '/home/users': typeof AuthenticatedHomeUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/_authenticated/home': typeof AuthenticatedHomeRouteRouteWithChildren
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/_authenticated/home/profile': typeof AuthenticatedHomeProfileRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRouteWithChildren
+  '/_authenticated/home/_homeLayout': typeof AuthenticatedHomeHomeLayoutRoute
   '/_authenticated/home/sessions': typeof AuthenticatedHomeSessionsRoute
-  '/_authenticated/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
+  '/_authenticated/home/users': typeof AuthenticatedHomeUsersRoute
   '/_authenticated/home/': typeof AuthenticatedHomeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/home'
     | '/sign-in'
     | '/sign-up'
-    | '/home/profile'
+    | '/home'
     | '/home/sessions'
-    | '/session/$sessionId'
+    | '/home/users'
     | '/home/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/sign-in'
-    | '/sign-up'
-    | '/home/profile'
-    | '/home/sessions'
-    | '/session/$sessionId'
-    | '/home'
+  to: '/' | '/sign-in' | '/sign-up' | '/home' | '/home/sessions' | '/home/users'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/_authenticated/home'
     | '/sign-in/'
     | '/sign-up/'
-    | '/_authenticated/home/profile'
+    | '/_authenticated/home'
+    | '/_authenticated/home/_homeLayout'
     | '/_authenticated/home/sessions'
-    | '/_authenticated/session/$sessionId'
+    | '/_authenticated/home/users'
     | '/_authenticated/home/'
   fileRoutesById: FileRoutesById
 }
@@ -154,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/sign-up/': {
       id: '/sign-up/'
       path: '/sign-up'
@@ -168,70 +166,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/home/': {
       id: '/_authenticated/home/'
       path: '/'
       fullPath: '/home/'
       preLoaderRoute: typeof AuthenticatedHomeIndexRouteImport
-      parentRoute: typeof AuthenticatedHomeRouteRoute
+      parentRoute: typeof AuthenticatedHomeRoute
     }
-    '/_authenticated/session/$sessionId': {
-      id: '/_authenticated/session/$sessionId'
-      path: '/session/$sessionId'
-      fullPath: '/session/$sessionId'
-      preLoaderRoute: typeof AuthenticatedSessionSessionIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/_authenticated/home/users': {
+      id: '/_authenticated/home/users'
+      path: '/users'
+      fullPath: '/home/users'
+      preLoaderRoute: typeof AuthenticatedHomeUsersRouteImport
+      parentRoute: typeof AuthenticatedHomeRoute
     }
     '/_authenticated/home/sessions': {
       id: '/_authenticated/home/sessions'
       path: '/sessions'
       fullPath: '/home/sessions'
       preLoaderRoute: typeof AuthenticatedHomeSessionsRouteImport
-      parentRoute: typeof AuthenticatedHomeRouteRoute
+      parentRoute: typeof AuthenticatedHomeRoute
     }
-    '/_authenticated/home/profile': {
-      id: '/_authenticated/home/profile'
-      path: '/profile'
-      fullPath: '/home/profile'
-      preLoaderRoute: typeof AuthenticatedHomeProfileRouteImport
-      parentRoute: typeof AuthenticatedHomeRouteRoute
+    '/_authenticated/home/_homeLayout': {
+      id: '/_authenticated/home/_homeLayout'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeHomeLayoutRouteImport
+      parentRoute: typeof AuthenticatedHomeRoute
     }
   }
 }
 
-interface AuthenticatedHomeRouteRouteChildren {
-  AuthenticatedHomeProfileRoute: typeof AuthenticatedHomeProfileRoute
+interface AuthenticatedHomeRouteChildren {
+  AuthenticatedHomeHomeLayoutRoute: typeof AuthenticatedHomeHomeLayoutRoute
   AuthenticatedHomeSessionsRoute: typeof AuthenticatedHomeSessionsRoute
+  AuthenticatedHomeUsersRoute: typeof AuthenticatedHomeUsersRoute
   AuthenticatedHomeIndexRoute: typeof AuthenticatedHomeIndexRoute
 }
 
-const AuthenticatedHomeRouteRouteChildren: AuthenticatedHomeRouteRouteChildren =
-  {
-    AuthenticatedHomeProfileRoute: AuthenticatedHomeProfileRoute,
-    AuthenticatedHomeSessionsRoute: AuthenticatedHomeSessionsRoute,
-    AuthenticatedHomeIndexRoute: AuthenticatedHomeIndexRoute,
-  }
+const AuthenticatedHomeRouteChildren: AuthenticatedHomeRouteChildren = {
+  AuthenticatedHomeHomeLayoutRoute: AuthenticatedHomeHomeLayoutRoute,
+  AuthenticatedHomeSessionsRoute: AuthenticatedHomeSessionsRoute,
+  AuthenticatedHomeUsersRoute: AuthenticatedHomeUsersRoute,
+  AuthenticatedHomeIndexRoute: AuthenticatedHomeIndexRoute,
+}
 
-const AuthenticatedHomeRouteRouteWithChildren =
-  AuthenticatedHomeRouteRoute._addFileChildren(
-    AuthenticatedHomeRouteRouteChildren,
-  )
+const AuthenticatedHomeRouteWithChildren =
+  AuthenticatedHomeRoute._addFileChildren(AuthenticatedHomeRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedHomeRouteRoute: typeof AuthenticatedHomeRouteRouteWithChildren
-  AuthenticatedSessionSessionIdRoute: typeof AuthenticatedSessionSessionIdRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedHomeRouteRoute: AuthenticatedHomeRouteRouteWithChildren,
-  AuthenticatedSessionSessionIdRoute: AuthenticatedSessionSessionIdRoute,
+  AuthenticatedHomeRoute: AuthenticatedHomeRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

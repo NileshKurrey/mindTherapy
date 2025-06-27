@@ -9,7 +9,6 @@
   "framework": "react-cra",
   "chosenAddOns": [
     "eslint",
-    "shadcn",
-    "start"
+    "shadcn"
   ]
 }
