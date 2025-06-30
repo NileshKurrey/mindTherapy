@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { createFileRoute, redirect} from '@tanstack/react-router'
+import { createFileRoute} from '@tanstack/react-router'
 import {  useForm } from 'react-hook-form'
 import {z} from "zod"
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,44 +12,56 @@ import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import {useUserStore} from '@/store/userStore'
 import { useNavigate } from '@tanstack/react-router'
-// import { useEffect } from 'react'
+import { useEffect } from 'react'
 import { toast } from 'react-toastify'
 
 export const Route = createFileRoute('/sign-in/')({
   beforeLoad: async () => {
-    const {isAuthenticated}= useUserStore.getState()
-    // Redirect to home if already authenticated
-    if (isAuthenticated) {
-      throw redirect({
-        to: '/home'
-      })
+    const {getUser}= useUserStore.getState()
+    try {
+      await getUser()
+    } catch (error) {
+      console.error('Error fetching user:', error)
     }
   },
-  
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const {message, success, error, loading, clearState } = useUserStore()
+  const { isAuthenticated,message, success, error, loading, clearState } = useUserStore()
   const { loginUser } = useUserStore()
   const navigate = useNavigate()
 
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
+ useEffect(() => { 
+    // Redirect to home if already authenticated
+    console.log('isAuthenticated:', isAuthenticated)
+    if (isAuthenticated) {
+      navigate({ to: '/home' })
+    }
+  }, [])
   // Show success/error messages
-
+  useEffect(() => {
+    if (success && message) {
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+      })
+      navigate({ to: '/home' })
+      clearState() // Clear the success state after navigation
+    }
+    
+    if (error && !success) {
+      toast.error(error, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+      })
+      clearState() // Clear the error state after showing toast
+    }
+  }, [success, message, onSubmit])
 
   const formSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -68,29 +80,12 @@ function RouteComponent() {
     try {
       await loginUser(values.email, values.password)
       // The useEffect will handle success/error messages and navigation
-       if (success && message) {
-      toast.success(message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
+
+    } catch (error) {
+      console.error('Login submission error:', error)
     }
-    
-    if (error && !success) {
-      toast.error(error, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
-    }
-    clearState()
-    navigate({ to: '/home' })
-  } catch (error) {
-    console.error('Login submission error:', error)
   }
-  }
+
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className='flex flex-col w-96'>

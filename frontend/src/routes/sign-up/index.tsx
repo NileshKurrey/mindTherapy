@@ -12,13 +12,32 @@ import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import { useNavigate } from '@tanstack/react-router'
 import { useUserStore } from '@/store/userStore'
+import { useEffect } from 'react'
+import { toast } from 'react-toastify'
 export const Route = createFileRoute('/sign-up/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+const {isAuthenticated, getUser,registerUser,message,success,error} = useUserStore()
+  useEffect(() => {
+    const fetchUser = async () => {
+      if(!isAuthenticated) {
+        try {
+          await getUser()
+          const { isAuthenticated: newAuthState } = useUserStore.getState()
+          if (newAuthState) {
+           navigate({ to: '/home' })
+          }
 
-  const {registerUser} = useUserStore()
+        } catch (error) {
+          // Handle error if getUser fails
+          console.error(error)
+        }
+      }
+    }
+    fetchUser()
+  }, [])
   const navigate = useNavigate()  
   const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters long"),
@@ -37,11 +56,33 @@ function onSubmit(values: z.infer<typeof formSchema>) {
   try {
     const register = async()=>{ 
    await registerUser({ id: null, ...values })
-   await navigate({ to: '/home' })
+ if(success){
+         toast.success(message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+          }) 
+      navigate({ to: '/home' })
+    }else{
+       toast.error(error,{
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+    })
+    }      
    }
    register()
-    
+  console.log(error) 
   } catch (error) {
+    console.log(error)
+  toast.error(message,{
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+    })
     console.error(error)
   }
   

@@ -1,4 +1,4 @@
-import {  Home, Nfc, SettingsIcon, UserIcon} from "lucide-react"
+import {  Home, LogOut, Nfc, SettingsIcon, UserIcon} from "lucide-react"
 
 import {
   Sidebar,
@@ -15,7 +15,10 @@ import {
 import { Avatar, AvatarImage } from "./ui/avatar"
 import { AvatarFallback } from "@radix-ui/react-avatar"
 import logo from "@/logo.png"
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
+import { useUserStore } from "@/store/userStore"
+import { useEffect } from "react"
+import { toast } from "react-toastify"
 // Menu items.
 const Dashboard = [
   {
@@ -40,10 +43,44 @@ const User =[
         title: "Settings",
         url: "/home/settings",
         icon: SettingsIcon,
-    },
-]
+    }
+  ]
 
 export function AppSidebar() {
+  const { logoutUser,message,success,clearState } = useUserStore() // Assuming you have a logout function in your user store
+  const navigate = useNavigate()
+  const handleLogout = async () => {
+   try {
+     await logoutUser()
+     toast.success('Logout successful', {
+       position: "top-right",
+       autoClose: 5000,
+       hideProgressBar: false,
+       closeOnClick: true,
+     })
+     clearState()
+     navigate({ to: '/sign-in' })
+   } catch (error) {
+     console.error('Logout failed:', error)
+   }
+  }
+  useEffect(() => {
+    if (message && success) {
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+      })
+    } else if (message && !success) {
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+      })
+    }
+  }, [handleLogout])
   return (
     <Sidebar className="bg-white">
       <SidebarHeader>
@@ -87,6 +124,11 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem key="logout">
+                <SidebarMenuButton onClick={() => handleLogout()} asChild className="hover:bg-red-300/25 active:bg-red-300/25 active:text-red-300 hover:text-red-300 transition duration-300 delay-150 ease-in-out cursor-pointer">
+                    <span><LogOut />Logout</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

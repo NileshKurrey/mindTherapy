@@ -165,7 +165,7 @@ export const login = asyncHandler(async(req, res)=>{
         }
     })
     if(!user){
-        res.status(400).json(new ApiResponse(400,"User not found"));
+        res.status(400).json(new ApiResponse(400,[],"User not found"));
         throw new ApiError(400, "User not found",);
     }
     const isPasswordCorrect = await bcrypt.compare(password,user.password)
@@ -481,7 +481,7 @@ export const logout = asyncHandler(async (req, res) => {
     secure: process.env.NODE_ENV !== "development",
   });
 
-  res.status(200).json(new ApiResponse(200, "User Logout Successfully!"));
+  res.status(200).json(new ApiResponse(200,'', "User Logout Successfully!"));
 });
 
 //delete account

@@ -5,6 +5,7 @@ import Widget from '@/components/widget'
 import { createFileRoute } from '@tanstack/react-router'
 import { Mic,Nfc,Smile ,Timer} from "lucide-react"
 import { useNavigate } from '@tanstack/react-router'
+import { useUserStore } from '@/store/userStore'
 
 
 export const Route = createFileRoute('/_authenticated/home/')({
@@ -61,17 +62,19 @@ const reportCard =[
   }
 ]
 function RouteComponent() {
+  const {user} = useUserStore()
   const navigate = useNavigate();
   const handleClick = () => {
     const sessionId = Math.random().toString(36).substring(2, 15); // Generate a random session ID
     // Navigate to the new session route  
     navigate({to:`/session/${sessionId}`})
   }
+  console.log
   return <div className='ml-4 w-[95%]'>
     <div className='w-full p-2'>
       <Card className='w-full  bg-gradient-to-r from-red-300 to-red-500 text-white rounded-lg p-4'>
       <CardContent>
-        <h1 className='text-2xl font-extrabold'>Welcome Back, Nilesh!</h1>
+        <h1 className='text-2xl font-extrabold'>Welcome Back, {user?.name.split(" ")[0]}!</h1>
         <p className='text-slate-50'>Ready for another meaningful conversation? Your mental journey continues here.</p>
       </CardContent>
         <CardFooter>
