@@ -10,11 +10,16 @@ import { Link } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
+import { useNavigate } from '@tanstack/react-router'
+import { useUserStore } from '@/store/userStore'
 export const Route = createFileRoute('/sign-up/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+
+  const {registerUser} = useUserStore()
+  const navigate = useNavigate()  
   const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters long"),
     email: z.string().email("Invalid email address"),
@@ -29,8 +34,17 @@ function RouteComponent() {
       password: '',
   }})
 function onSubmit(values: z.infer<typeof formSchema>) {
-   
-    console.log(values)
+  try {
+    const register = async()=>{ 
+   await registerUser({ id: null, ...values })
+   await navigate({ to: '/home' })
+   }
+   register()
+    
+  } catch (error) {
+    console.error(error)
+  }
+  
   }
 return <>
         <div className="flex justify-center items-center h-screen">
@@ -87,8 +101,8 @@ return <>
                     </FormItem>
                   )}
                 />
-                
-                <Button type="submit" variant={"default"} className='w-full cursor-pointer bg-red-500 hover:bg-red-600'>Sign Up</Button>
+
+                <Button type="submit" variant={"default"} className={`w-full cursor-pointer bg-red-500 hover:bg-red-600:t`}>Sign Up</Button>
                </form>
               </Form>
             </CardContent>

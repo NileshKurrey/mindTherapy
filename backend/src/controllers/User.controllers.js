@@ -196,7 +196,7 @@ export const login = asyncHandler(async(req, res)=>{
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 res.status(200).json(
-    new ApiResponse(200, "User Login Successfully!", {
+    new ApiResponse(200, {
       accessToken,
       user: {
         id: user.id,
@@ -205,7 +205,7 @@ res.status(200).json(
         role: user.role,
         image: user.image,
       },
-    }),
+    },"User Login Successfully!", )
   );
 })
 
@@ -420,14 +420,11 @@ export const getUser = asyncHandler(async (req, res) => {
     new ApiResponse(200, {
       
         id: user.id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        username: user.username,
+        name: user.name,
         email: user.email,
         role: user.role,
         image: user.image,
-     
-    },"Successfully fetched User Profile!"),
+      },"Successfully fetched User Profile!"),
   );
 });
 //update Profile

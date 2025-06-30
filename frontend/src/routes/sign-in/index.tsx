@@ -10,11 +10,16 @@ import { Link } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
+import {useUserStore} from '@/store/userStore'
+import { useNavigate } from '@tanstack/react-router'
+
 export const Route = createFileRoute('/sign-in/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const {loginUser} = useUserStore()
+  const navigate = useNavigate()
   const formSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
@@ -27,8 +32,15 @@ function RouteComponent() {
       password: '',
   }})
 function onSubmit(values: z.infer<typeof formSchema>) {
-   
-    console.log(values)
+    try {
+    const login = async()=>{ 
+   await loginUser(values.email, values.password)
+   await navigate({ to: '/home' })
+   }
+   login()
+  } catch (error) {
+    console.error(error)
+  }
   }
 return <>
         <div className="flex justify-center items-center h-screen">

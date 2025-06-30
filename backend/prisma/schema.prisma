@@ -22,7 +22,11 @@ model User {
   isAdmin    Boolean    @default(false)
   isVerified Boolean    @default(false)
   createdAt  DateTime   @default(now())
-   reports           Report[]
+  verificationToken String? @unique
+  verificationTokenExpiry DateTime?
+  refreshToken String? @unique
+  refreshTokenExpiry DateTime?
+  reports    Report[]
   sessions   ChatSession[]
 }
 
