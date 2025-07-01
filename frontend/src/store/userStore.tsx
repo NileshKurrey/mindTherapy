@@ -10,28 +10,28 @@ interface UserState {
 
 interface UserStore {
   user: UserState | null;
-  loader: boolean;
+  loading: boolean;
   isAuthenticated: boolean;
   message: string | null;
   success: boolean;
   error: string | null;
   registerUser: (user: UserState) => Promise<void>;
   loginUser: (email: string, password: string) => Promise<void>;
-  getUser: (ishover:boolean | void) => Promise<void>;
+  getUser: () => Promise<void>;
   logoutUser: () => Promise<void>;
   clearState: () => void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({
   user: null,
-  loader: false,
+  loading: false,
   error: null,
   message: null,
   success: false,
   isAuthenticated: false,
    
   registerUser: async (user: UserState) => {
-    set({ loader: true, error: null, success: false });
+    set({ loading: true, error: null, success: false });
     try {
       const response = await apiClient.registerUser({
         id: null,
@@ -44,23 +44,23 @@ export const useUserStore = create<UserStore>((set) => ({
       if (response.success && response.data) {
         set({
           user: {
-            id: null,
-            name: '',
-            email: response.data.user.email ?? '',
-            password:  ''
+            id: response.data.id ?? null,
+            name: response.data.name ?? '',
+            email: response.data.email ?? '',
+            password: response.data.password ?? ''
           },
-          loader: false,
+          loading: false,
           error: null,
           message: response.message || 'Registration successful',
-          success: response.success,
+          success: true,
           isAuthenticated: true
         });
       } else {
         // Registration failed
         set({ 
-          loader: false, 
+          loading: false, 
           error: response.message || 'Registration failed',
-          success: response.success,
+          success: false,
           isAuthenticated: false,
           message: null
         });
@@ -68,7 +68,7 @@ export const useUserStore = create<UserStore>((set) => ({
     } catch (error: any) {
       console.error('Registration error:', error);
       set({ 
-        loader: false, 
+        loading: false, 
         error: error.message || 'Registration failed',
         success: false,
         isAuthenticated: false,
@@ -78,7 +78,7 @@ export const useUserStore = create<UserStore>((set) => ({
   },
 
   loginUser: async (email: string, password: string) => {
-    set({ loader: true, error: null, success: false });
+    set({ loading: true, error: null, success: false });
     try {
       const response = await apiClient.loginUser(email, password);
       console.log('Login response in store:', response);
@@ -87,12 +87,12 @@ export const useUserStore = create<UserStore>((set) => ({
       if (response.success && response.data) {
         set({
           user: {
-            id: response.data.user.id ?? null,
-            name: response.data.user.name ?? '',
-            email: response.data.user.email ?? '',
-            password: response.data.user.password ?? ''
+            id: response.data.id ?? null,
+            name: response.data.name ?? '',
+            email: response.data.email ?? '',
+            password: response.data.password ?? ''
           },
-          loader: false,
+          loading: false,
           error: null,
           message: response.message || 'Login successful',
           success: true,
@@ -102,7 +102,7 @@ export const useUserStore = create<UserStore>((set) => ({
         // Login failed - response came back but success is false
         console.log('Login failed with response:', response);
         set({ 
-          loader: false, 
+          loading: false, 
           error: response.message || 'Login failed',
           success: false,
           isAuthenticated: false,
@@ -114,7 +114,7 @@ export const useUserStore = create<UserStore>((set) => ({
       // This should rarely happen now since we handle errors in the API service
       console.error('Login error caught:', error);
       set({ 
-        loader: false, 
+        loading: false, 
         error: error.message || 'Login failed',
         success: false,
         isAuthenticated: false,
@@ -123,15 +123,12 @@ export const useUserStore = create<UserStore>((set) => ({
     }
   },
 
-  getUser: async (ishover:boolean  | void) => {
-    if(ishover === true){
-      set({ loader: false, error:null });
-    }else{
-      set({loader: true, error: null });
-    }
-
+  getUser: async () => {
+    set({ loading: true, error: null });
     try {
       const response = await apiClient.getUserProfile();
+      console.log(response, "in user store");
+      
       // Check if response is successful and has data
       if (response.success && response.data) {
         set({
@@ -141,33 +138,32 @@ export const useUserStore = create<UserStore>((set) => ({
             email: response.data.email ?? '',
             password: response.data.password ?? ''
           },
-          loader: false,
+          loading: false,
           error: null,
           isAuthenticated: true
-
         });
       } else {
         // Get user failed
         set({ 
           user: null,
-          loader: false, 
+          loading: false, 
           error: response.message || 'Failed to get user profile',
           isAuthenticated: false
         });
-        // throw new Error(response.message || 'Failed to get user profile');
+        throw new Error(response.message || 'Failed to get user profile');
       }
     } catch (error: any) {
       console.error('Get user error:', error);
       set({ 
         user: null,
-        loader: false, 
+        loading: false, 
         isAuthenticated: false
       });
       throw error; // Re-throw for the _authenticated route
     }
   },
   logoutUser: async () => {
-    set({ loader: true, error: null, success: false });
+    set({ loading: true, error: null, success: false });
     try {
       const response = await apiClient.logoutUser();
       console.log('Logout response:', response);
@@ -175,7 +171,7 @@ export const useUserStore = create<UserStore>((set) => ({
       if (response.success) {
         set({
           user: null,
-          loader: false,
+          loading: false,
           error: null,
           message: response.message || 'Logout successful',
           success: true,
@@ -183,7 +179,7 @@ export const useUserStore = create<UserStore>((set) => ({
         });
       } else {
         set({ 
-          loader: false, 
+          loading: false, 
           error: response.message || 'Logout failed',
           success: false,
           isAuthenticated: true,
@@ -193,7 +189,7 @@ export const useUserStore = create<UserStore>((set) => ({
     } catch (error: any) {
       console.error('Logout error:', error);
       set({ 
-        loader: false, 
+        loading: false, 
         error: error.message || 'Logout failed',
         success: false,
         isAuthenticated: true,

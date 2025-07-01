@@ -6,6 +6,7 @@ export const Route = createFileRoute('/_authenticated/session/$sessionId')({
 })
 
 function RouteComponent() {
+  
 //   const {sessionId} = Route.useParams();
   return <>
   <div className='flex  justify-center items-center h-screen'>
