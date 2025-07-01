@@ -204,7 +204,7 @@ res.status(200).json(
         email: user.email,
         role: user.role,
         image: user.image,
-      },
+      }
     },"User Login Successfully!", )
   );
 })

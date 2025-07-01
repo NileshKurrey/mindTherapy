@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
+import { Route as EntryServerRouteImport } from './routes/entry.server'
 import { Route as AuthenticatedHomeRouteRouteImport } from './routes/_authenticated/home/route'
 import { Route as AuthenticatedHomeIndexRouteImport } from './routes/_authenticated/home/index'
 import { Route as AuthenticatedSessionSessionIdRouteImport } from './routes/_authenticated/session/$sessionId'
@@ -36,6 +37,11 @@ const SignUpIndexRoute = SignUpIndexRouteImport.update({
 const SignInIndexRoute = SignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntryServerRoute = EntryServerRouteImport.update({
+  id: '/entry/server',
+  path: '/entry/server',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedHomeRouteRoute = AuthenticatedHomeRouteRouteImport.update({
@@ -70,6 +76,7 @@ const AuthenticatedHomeProfileRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof AuthenticatedHomeRouteRouteWithChildren
+  '/entry/server': typeof EntryServerRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/home/profile': typeof AuthenticatedHomeProfileRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/entry/server': typeof EntryServerRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/home/profile': typeof AuthenticatedHomeProfileRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_authenticated/home': typeof AuthenticatedHomeRouteRouteWithChildren
+  '/entry/server': typeof EntryServerRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/_authenticated/home/profile': typeof AuthenticatedHomeProfileRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/home'
+    | '/entry/server'
     | '/sign-in'
     | '/sign-up'
     | '/home/profile'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/entry/server'
     | '/sign-in'
     | '/sign-up'
     | '/home/profile'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_authenticated/home'
+    | '/entry/server'
     | '/sign-in/'
     | '/sign-up/'
     | '/_authenticated/home/profile'
@@ -134,6 +146,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  EntryServerRoute: typeof EntryServerRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
 }
@@ -166,6 +179,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entry/server': {
+      id: '/entry/server'
+      path: '/entry/server'
+      fullPath: '/entry/server'
+      preLoaderRoute: typeof EntryServerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/home': {
@@ -241,6 +261,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  EntryServerRoute: EntryServerRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
 }

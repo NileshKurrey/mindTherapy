@@ -6,20 +6,26 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Link } from '@tanstack/react-router'
+import {LoaderCircle } from 'lucide-react'
+import { Link,useRouter } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import {useUserStore} from '@/store/userStore'
-import { useNavigate } from '@tanstack/react-router'
 // import { useEffect } from 'react'
 import { toast } from 'react-toastify'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/sign-in/')({
+
   beforeLoad: async () => {
-    const {isAuthenticated}= useUserStore.getState()
-    // Redirect to home if already authenticated
+    const ishover = true
+    await useUserStore.getState().getUser(ishover)
+  },
+  loader: async () => {
+    const { isAuthenticated,clearState } = useUserStore.getState()
     if (isAuthenticated) {
+      clearState()
       throw redirect({
         to: '/home'
       })
@@ -30,25 +36,42 @@ export const Route = createFileRoute('/sign-in/')({
 })
 
 function RouteComponent() {
-  const {message, success, error, loading, clearState } = useUserStore()
-  const { loginUser } = useUserStore()
-  const navigate = useNavigate()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
-  // Show success/error messages
+  const {message, success, error,loader, clearState } = useUserStore()
+  const { loginUser } = useUserStore()
+ const router = useRouter()
+
+useEffect(() => {
+    const handleEffect = async () => {
+      if (isSubmitting) {
+        if (success && message) {
+          toast.success(message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+          })
+          clearState()
+          setIsSubmitting(false)
+          await router.invalidate()
+          router.navigate({ to: '/home', replace: true })
+        }
+
+        if (error && !success) {
+          toast.error(error, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+          })
+          clearState()
+          setIsSubmitting(false)
+        }
+      }
+    }
+    handleEffect()
+  }, [success, error, message, isSubmitting])
 
 
   const formSchema = z.object({
@@ -66,30 +89,18 @@ function RouteComponent() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsSubmitting(true)
       await loginUser(values.email, values.password)
-      // The useEffect will handle success/error messages and navigation
-       if (success && message) {
-      toast.success(message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
+      // navigate({to: '/home', replace: true})
+    } catch (error) {
+      toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+    })
+      setIsSubmitting(false)
     }
-    
-    if (error && !success) {
-      toast.error(error, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
-    }
-    clearState()
-    navigate({ to: '/home' })
-  } catch (error) {
-    console.error('Login submission error:', error)
-  }
   }
   return (
     <div className="flex justify-center items-center h-screen">
@@ -138,9 +149,16 @@ function RouteComponent() {
                 type="submit" 
                 variant={"default"} 
                 className='w-full cursor-pointer bg-red-500 hover:bg-red-600'
-                disabled={loading}
+                disabled={loader}
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loader ? <span className='flex w-full justify-center items-center'>
+                  <span className='w-5/10 text-end'>
+                  signing in...
+                  </span>
+                  <div className='w-5/10 flex justify-center items-center'>
+                  <LoaderCircle className='animate-spin' />
+                  </div>
+                </span> : 'Sign In'}
               </Button>
             </form>
           </Form>
@@ -148,7 +166,7 @@ function RouteComponent() {
         <CardFooter>
           <p className='text-sm text-gray-500'>
             Don't have an account? 
-            <Link to="/sign-up" className="text-blue-500 hover:underline ml-1">
+            <Link to="/sign-up" preload={false} className="text-blue-500 hover:underline ml-1">
               Sign Up
             </Link>
           </p>
