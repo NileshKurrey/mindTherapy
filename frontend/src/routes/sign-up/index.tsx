@@ -15,6 +15,7 @@ import { useUserStore } from '@/store/userStore'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { LoaderCircle } from 'lucide-react'
+import { useLoadingBar } from 'react-top-loading-bar'
 export const Route = createFileRoute('/sign-up/')({
   beforeLoad: async () => {
     const ishover = true
@@ -40,9 +41,12 @@ export const Route = createFileRoute('/sign-up/')({
 function RouteComponent() {
   const { registerUser, message, success, error, loader } = useUserStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const router = useRouter()  
+  const router = useRouter()
+  const { start, complete } = useLoadingBar({
+    color: '#f87171', //bg-red-300 to bg-red-500
+  })
   useEffect(() => {
-   if(isSubmitting) {
+    if (isSubmitting) {
       if (success && message) {
         toast.success(message, {
           position: "top-right",
@@ -54,6 +58,7 @@ function RouteComponent() {
         setIsSubmitting(false)
         router.invalidate()
         router.navigate({ to: '/sign-in', replace: true })
+        complete()
       }
       if (error && !success) {
         toast.error(error, {
@@ -80,20 +85,16 @@ function RouteComponent() {
       email: '',
       password: '',
   }})
-function onSubmit(values: z.infer<typeof formSchema>) {
+async function onSubmit(values: z.infer<typeof formSchema>) {
   try {
-  setIsSubmitting(true)
-    const register = async()=>{ 
-   await registerUser({ id: null, ...values })
-    }
-   register()
-  console.log(error) 
-
+    setIsSubmitting(true)
+    await registerUser({ id: null, ...values })
+    start()
   } catch (error) {
     setIsSubmitting(false)
-  toast.error(message,{
-            position: "top-right",
-            autoClose: 5000,
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
     })

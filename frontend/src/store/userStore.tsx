@@ -52,7 +52,7 @@ export const useUserStore = create<UserStore>((set) => ({
           error: null,
           message: response.message || 'Registration successful',
           success: true,
-          isAuthenticated: true
+          isAuthenticated: false
         });
       } else {
         // Registration failed
