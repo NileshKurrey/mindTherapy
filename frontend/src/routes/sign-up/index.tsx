@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import {  useForm } from 'react-hook-form'
 import {z} from "zod"
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,53 +10,63 @@ import { Link } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
-import { useNavigate } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import { useUserStore } from '@/store/userStore'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { LoaderCircle } from 'lucide-react'
 export const Route = createFileRoute('/sign-up/')({
-<<<<<<< HEAD
   beforeLoad: async () => {
     const ishover = true
+    if(!useUserStore.getState().isAuthenticated) {
     await useUserStore.getState().getUser(ishover)
+    }
   },
   loader: async () => {
     const { isAuthenticated, clearState } = useUserStore.getState()
     if (isAuthenticated) {
       clearState()
-      
       throw redirect({
         to: '/home'
       })
+    }else{
+      clearState()
     }
   },
   preload:false,
-=======
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
   component: RouteComponent,
 })
 
 function RouteComponent() {
-const {isAuthenticated, getUser,registerUser,message,success,error} = useUserStore()
+  const { registerUser, message, success, error, loader } = useUserStore()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()  
   useEffect(() => {
-    const fetchUser = async () => {
-      if(!isAuthenticated) {
-        try {
-          await getUser()
-          const { isAuthenticated: newAuthState } = useUserStore.getState()
-          if (newAuthState) {
-           navigate({ to: '/home' })
-          }
-
-        } catch (error) {
-          // Handle error if getUser fails
-          console.error(error)
-        }
+   if(isSubmitting) {
+      if (success && message) {
+        toast.success(message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+        })
+        useUserStore.getState().clearState()
+        setIsSubmitting(false)
+        router.invalidate()
+        router.navigate({ to: '/sign-in', replace: true })
+      }
+      if (error && !success) {
+        toast.error(error, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+        })
+        useUserStore.getState().clearState()
+        setIsSubmitting(false)
       }
     }
-    fetchUser()
-  }, [])
-  const navigate = useNavigate()  
+  }, [success, message, error, router, isSubmitting])
   const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters long"),
     email: z.string().email("Invalid email address"),
@@ -72,36 +82,21 @@ const {isAuthenticated, getUser,registerUser,message,success,error} = useUserSto
   }})
 function onSubmit(values: z.infer<typeof formSchema>) {
   try {
+  setIsSubmitting(true)
     const register = async()=>{ 
    await registerUser({ id: null, ...values })
- if(success){
-         toast.success(message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-          }) 
-      navigate({ to: '/home' })
-    }else{
-       toast.error(error,{
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-    })
-    }      
-   }
+    }
    register()
   console.log(error) 
+
   } catch (error) {
-    console.log(error)
+    setIsSubmitting(false)
   toast.error(message,{
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
     })
-    console.error(error)
   }
   
   }
@@ -161,12 +156,21 @@ return <>
                   )}
                 />
 
-                <Button type="submit" variant={"default"} className={`w-full cursor-pointer bg-red-500 hover:bg-red-600:t`}>Sign Up</Button>
+                <Button
+                 type="submit" 
+                 variant={"default"} 
+                 className={`w-full cursor-pointer bg-red-500 hover:bg-red-600`}>
+                 {loader ? <span>
+                   <span className='sr-only'>Loading...</span>
+                   <LoaderCircle className='animate-spin' />
+                 </span> : 'Sign Up'}
+                </Button>
                </form>
               </Form>
             </CardContent>
             <CardFooter>
-              <p className='text-sm text-gray-500'>Already have an account? <Link to="/sign-in" className='text-blue-500 hover:underline'>Sign In</Link></p>
+              <p className='text-sm text-gray-500'>Already have an account?
+                 <Link preloadDelay={5000} from='/sign-up' to="/sign-in" className='text-blue-500 hover:underline'>Sign In</Link></p>
             </CardFooter>
           </Card>
         </div>

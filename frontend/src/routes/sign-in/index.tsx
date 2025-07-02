@@ -6,53 +6,48 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-<<<<<<< HEAD
 
 import {LoaderCircle } from 'lucide-react'
 import { Link,useRouter } from '@tanstack/react-router'
-=======
-import { Link } from '@tanstack/react-router'
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import logo from '@/logo.png'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import {useUserStore} from '@/store/userStore'
-<<<<<<< HEAD
 import {useLoadingBar} from 'react-top-loading-bar'
-=======
-import { useNavigate } from '@tanstack/react-router'
-// import { useEffect } from 'react'
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
 import { toast } from 'react-toastify'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/sign-in/')({
   beforeLoad: async () => {
-    const {isAuthenticated}= useUserStore.getState()
-    // Redirect to home if already authenticated
+    const ishover = true
+    if(!useUserStore.getState().isAuthenticated) {
+    await useUserStore.getState().getUser(ishover)
+    }
+  },
+  loader: async () => {
+    const { isAuthenticated, clearState } = useUserStore.getState()
     if (isAuthenticated) {
+      clearState()
       throw redirect({
         to: '/home'
       })
+    }else{
+      clearState()
     }
   },
-  
+  preload:false,
   component: RouteComponent,
 })
 
 function RouteComponent() {
-<<<<<<< HEAD
   const [isSubmitting, setIsSubmitting] = useState(false)
   const {start,complete} = useLoadingBar({
     color: '#f87171', //bg-red-300 to bg-red-500
   })
   const {message, success, error,loader, clearState } = useUserStore()
-=======
-  const {message, success, error, loading, clearState } = useUserStore()
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
   const { loginUser } = useUserStore()
-  const navigate = useNavigate()
+  const router = useRouter()
 
-<<<<<<< HEAD
 useEffect(() => {
     const handleEffect = async () => {
       if (isSubmitting) {
@@ -71,6 +66,7 @@ useEffect(() => {
         }
 
         if (error && !success) {
+          console.log("inside error toast")
           toast.error(error, {
             position: "top-right",
             autoClose: 5000,
@@ -84,23 +80,6 @@ useEffect(() => {
     }
     handleEffect()
   }, [success, error, message, isSubmitting])
-=======
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
-//  useEffect(() => { 
-//     // Redirect to home if already authenticated
-//     console.log('isAuthenticated:', isAuthenticated)
-//     if (isAuthenticated) {
-//       navigate({ to: '/home' })
-//     }
-//   }, [])
-  // Show success/error messages
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
 
 
   const formSchema = z.object({
@@ -118,11 +97,8 @@ useEffect(() => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-<<<<<<< HEAD
-      start()
       setIsSubmitting(true)
-=======
->>>>>>> parent of 81da066 (fixed bugs and almost completed authentication)
+      start()
       await loginUser(values.email, values.password)
       // The useEffect will handle success/error messages and navigation
        if (success && message) {
@@ -143,7 +119,6 @@ useEffect(() => {
       })
     }
     clearState()
-    navigate({ to: '/home' })
   } catch (error) {
     console.error('Login submission error:', error)
   }
@@ -195,9 +170,12 @@ useEffect(() => {
                 type="submit" 
                 variant={"default"} 
                 className='w-full cursor-pointer bg-red-500 hover:bg-red-600'
-                disabled={loading}
+                disabled={loader}
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loader ? <span>
+                  <span className='sr-only'>Loading...</span>
+                  <LoaderCircle className='animate-spin' />
+                </span> : 'Sign In'}
               </Button>
             </form>
           </Form>
@@ -205,7 +183,7 @@ useEffect(() => {
         <CardFooter>
           <p className='text-sm text-gray-500'>
             Don't have an account? 
-            <Link to="/sign-up" className="text-blue-500 hover:underline ml-1">
+            <Link preloadDelay={5000} from='/sign-up' to="/sign-up" className="text-blue-500 hover:underline ml-1">
               Sign Up
             </Link>
           </p>

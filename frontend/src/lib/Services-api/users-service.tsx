@@ -16,13 +16,29 @@ interface User {
   password: string
 }
 
-interface UserResponse {
+interface UserResponse <T = User> {
   statusCode: number;
-  data: User | null; // Data can be null if user not found
+  data: T | null; // Data can be null if user not found
   message: string;
   success: boolean;
 }
 
+interface loginData {
+  accessToken: string;
+  user: {
+    id:string,
+    name: string;
+    email: string;
+  }
+}
+interface registerData{
+  id: null;
+ unhashedToken: string;
+  user: {
+      id: string;
+      email: string;
+    }
+}
 class ApiClient {
   private baseUrl: string
   private defaultHeaders: Record<string, string>
@@ -77,8 +93,9 @@ class ApiClient {
     }
   }
 
-  public registerUser(data: User): Promise<UserResponse> {
-    return this.customFetch<UserResponse>('/user/register', {
+  public registerUser(data: User): Promise<UserResponse<registerData>> {
+    console.log('Making registration request with:')
+    return this.customFetch<UserResponse<registerData>>('/user/register', {
       type: 'post',
       data: {
         name: data.name,
@@ -88,9 +105,9 @@ class ApiClient {
     });
   }
 
-  public loginUser(email: string, password: string): Promise<UserResponse> {
+  public loginUser(email: string, password: string): Promise<UserResponse<loginData>> {
     console.log('Making login request with:', { email, password })
-    return this.customFetch<UserResponse>('/user/login', {
+    return this.customFetch<UserResponse<loginData>>('/user/login', {
       type: 'post',
       data: {
         email: email,
