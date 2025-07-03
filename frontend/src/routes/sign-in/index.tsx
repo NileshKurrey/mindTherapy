@@ -98,26 +98,8 @@ useEffect(() => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true)
-      start()
       await loginUser(values.email, values.password)
-      // The useEffect will handle success/error messages and navigation
-       if (success && message) {
-      toast.success(message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
-    }
-    
-    if (error && !success) {
-      toast.error(error, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      })
-    }
+      start()
     clearState()
   } catch (error) {
     console.error('Login submission error:', error)
